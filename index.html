@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Suction Equipment Audit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      font-weight: bold;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .checklist-group {
+      margin-left: 10px;
+    }
+    .audit-block {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Suction Equipment Audit</h1>
+
+  <form id="baseForm">
+    <div class="form-group">
+      <label for="auditor">Auditor Name:</label>
+      <select id="auditor" required>
+        <option value="">Select Auditor</option>
+        <option value="Yorick">Yorick</option>
+        <option value="Duncan">Duncan</option>
+        <option value="Jessica">Jessica</option>
+        <option value="Bernard">Bernard</option>
+        <option value="Daniel">Daniel</option>
+        <option value="Nicole">Nicole</option>
+        <option value="Stephanie">Stephanie</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="date">Date:</label>
+      <input type="text" id="date" readonly>
+    </div>
+
+    <div class="form-group">
+      <label for="ward">Ward:</label>
+      <select id="ward" required>
+        <option value="">Select Ward</option>
+        <option>Medical Assessment Unit 1</option>
+        <option>Medical Assessment Unit 2</option>
+        <option>Medical Assessment Unit 3</option>
+        <option>Diabetic Foot Ward</option>
+        <option>AMU</option>
+        <option>Surgical Assessment Unit 1</option>
+        <option>Medical 5</option>
+        <option>Medical 4</option>
+        <option>Infectious Disease Unit</option>
+        <option>Medical 2</option>
+        <option>Surgical Assessment Unit 2</option>
+        <option>Medical 9</option>
+        <option>Medical 1</option>
+        <option>Medical 3</option>
+        <option>CCCU</option>
+        <option>Cardiac Surgical</option>
+        <option>Cardiac Medical</option>
+        <option>Orthopaedic 2</option>
+        <option>Orthopaedic 1</option>
+        <option>Neuro Medical</option>
+        <option>Neuro Surgical</option>
+        <option>Surgical 2</option>
+        <option>Surgical 1</option>
+        <option>Stroke Unit</option>
+        <option>Surgical 3</option>
+        <option>Surgical 4</option>
+        <option>Orthopaedic 3</option>
+        <option>ENT</option>
+        <option>Surgical 5</option>
+        <option>Urology 1</option>
+        <option>Urology 2</option>
+        <option>Medical 7</option>
+        <option>Gynae</option>
+        <option>Medical 8</option>
+        <option>Medical 11 + NIV</option>
+        <option>Surgical HDU</option>
+        <option>MIU4</option>
+        <option>Renal Unit</option>
+        <option>Short Stay Unit</option>
+        <option>Medical 10</option>
+        <option>Medical HDU</option>
+        <option>MIU 3</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="bedCount">Total Beds in Ward:</label>
+      <input type="number" id="bedCount" min="7" required>
+    </div>
+
+    <button type="button" onclick="generateAudits()">Generate Bed Audits</button>
+  </form>
+
+  <div id="auditContainer"></div>
+
+  <script>
+    // Auto-fill today's date in DD/MM/YYYY format
+    document.getElementById('date').value = new Date().toLocaleDateString('en-GB');
+
+    function generateAudits() {
+      const auditor = document.getElementById('auditor').value;
+      const date = document.getElementById('date').value;
+      const ward = document.getElementById('ward').value;
+      const bedCount = parseInt(document.getElementById('bedCount').value);
+
+      if (!auditor || !ward || !bedCount || bedCount < 7) {
+        alert("Please fill in all fields and ensure bed count is at least 7.");
+        return;
+      }
+
+      const container = document.getElementById('auditContainer');
+      container.innerHTML = '';
+
+      const bedNumbers = [];
+      while (bedNumbers.length < 7) {
+        const rand = Math.floor(Math.random() * bedCount) + 1;
+        if (!bedNumbers.includes(rand)) bedNumbers.push(rand);
+      }
+
+      bedNumbers.forEach((bedNum, index) => {
+        const div = document.createElement('div');
+        div.className = 'audit-block';
+        div.innerHTML = `
+          <h3>Audit ${index + 1}: ${ward} - Bed ${bedNum}</h3>
+          <div class="form-group">
+            <label>Bed Type:</label>
+            <select required>
+              <option value="">Select Bed Type</option>
+              <option>Normal Bed</option>
+              <option>Single Room</option>
+              <option>Monitor Bed</option>
+            </select>
+          </div>
+          ${generateChecklistInputs(index)}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function generateChecklistInputs(index) {
+      const questions = [
+        "Suction regulator plugged in to point",
+        "Suction regulator functioning",
+        "Suction canister present next to bed side",
+        "Canister liner present",
+        "Canister liner tubing present",
+        "Liner tubing connected to suction regulator",
+        "Suction set achieves ≥ 80mmHg (10kPa)",
+        "Patient-side tubing present (soft tip/Yankauer)",
+        "Compatible catheters present"
+      ];
+      return questions.map((q, i) => `
+        <div class="checklist-group">
+          <label>${q}:</label><br>
+          <input type="radio" name="q${index}_${i}" value="Yes" required> Yes
+          <input type="radio" name="q${index}_${i}" value="No"> No<br>
+        </div>
+      `).join('');
+    }
+  </script>
+
+</body>
+</html>
