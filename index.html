@@ -248,7 +248,7 @@
         });
       });
 
-      fetch("https://your-power-automate-endpoint-url", {
+      fetch("https://prod-212.westeurope.logic.azure.com:443/workflows/27acb4d067db4bdf825c635e6fb009ec/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Khma8YaPkuB3FJBvRmgwrgtjoB5aZGaEr8wEw_7xyO4", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ audits })
