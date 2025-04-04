@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Suction Equipment Audit - RRT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+      background-color: #f4f7f8;
+      color: #222;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1c3c4c;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .logo img {
+      width: 130px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .checklist-group {
+      margin: 10px 0;
+      padding-left: 10px;
+    }
+
+    .audit-block {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    button {
+      background-color: #1c3c4c;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #235067;
+    }
+
+    .submit-wrapper {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    #loadingOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      font-size: 24px;
+      text-align: center;
+      line-height: 100vh;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="RRT Logo (no background).png" alt="Rapid Response Team Logo">
+  </div>
+
+  <h1>Suction Equipment Audit</h1>
+
+  <form id="baseForm">
+    <div class="form-group">
+      <label for="auditor">Auditor Name:</label>
+      <select id="auditor" required>
+        <option value="">Select Auditor</option>
+        <option value="Yorick">Yorick</option>
+        <option value="Duncan">Duncan</option>
+        <option value="Jessica">Jessica</option>
+        <option value="Bernard">Bernard</option>
+        <option value="Daniel">Daniel</option>
+        <option value="Nicole">Nicole</option>
+        <option value="Stephanie">Stephanie</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="date">Date:</label>
+      <input type="text" id="date" readonly>
+    </div>
+
+    <div class="form-group">
+      <label for="ward">Ward:</label>
+      <input type="text" id="ward" required placeholder="Enter Ward Name">
+    </div>
+
+    <div class="form-group">
+      <label for="bedCount">Total Beds in Ward:</label>
+      <input type="number" id="bedCount" min="7" required>
+    </div>
+
+    <button type="button" onclick="generateAudits()">Generate Bed Audits</button>
+  </form>
+
+  <div id="auditContainer"></div>
+
+  <div class="submit-wrapper">
+    <button type="button" onclick="submitAudits()">Submit Ward Audit</button>
+  </div>
+
+  <div id="loadingOverlay">Submitting audit, please wait...</div>
+
+  <script>
+    document.getElementById('date').value = new Date().toLocaleDateString('en-GB');
+
+    function generateAudits() {
+      const auditor = document.getElementById('auditor').value;
+      const ward = document.getElementById('ward').value;
+      const bedCount = parseInt(document.getElementById('bedCount').value);
+      const container = document.getElementById('auditContainer');
+
+      if (!auditor || !ward || !bedCount || bedCount < 7) {
+        alert("Please complete all fields and ensure bed count is at least 7.");
+        return;
+      }
+
+      container.innerHTML = '';
+      const bedNumbers = [];
+      while (bedNumbers.length < 7) {
+        const rand = Math.floor(Math.random() * bedCount) + 1;
+        if (!bedNumbers.includes(rand)) bedNumbers.push(rand);
+      }
+
+      bedNumbers.forEach((bedNum, index) => {
+        const div = document.createElement('div');
+        div.className = 'audit-block';
+        div.innerHTML = `
+          <h3>Audit ${index + 1}: Bed ${bedNum}</h3>
+          <div class="form-group">
+            <label>Bed Type:</label>
+            <select required>
+              <option value="">Select Bed Type</option>
+              <option>Normal Bed</option>
+              <option>Single Room</option>
+              <option>Monitor Bed</option>
+            </select>
+          </div>
+          ${generateChecklistInputs(index)}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function generateChecklistInputs(index) {
+      const questions = [
+        "Suction regulator plugged in to point",
+        "Suction regulator functioning",
+        "Suction canister present next to bed side",
+        "Canister liner present",
+        "Canister liner tubing present",
+        "Liner tubing connected to suction regulator",
+        "Suction set achieves ≥ 80mmHg (10kPa)",
+        "Patient-side tubing present (soft tip/Yankauer)",
+        "Compatible catheters present"
+      ];
+      return questions.map((q, i) => `
+        <div class="checklist-group">
+          <label>${q}:</label><br>
+          <input type="radio" name="q${index}_${i}" value="Yes" required> Yes
+          <input type="radio" name="q${index}_${i}" value="No"> No<br>
+        </div>
+      `).join('');
+    }
+
+    function submitAudits() {
+      const audits = [];
+      const auditor = document.getElementById('auditor').value;
+      const date = document.getElementById('date').value;
+      const ward = document.getElementById('ward').value;
+
+      document.getElementById('loadingOverlay').style.display = 'block';
+
+      const blocks = document.querySelectorAll('.audit-block');
+      blocks.forEach((block, index) => {
+        const bed = block.querySelector('h3').innerText;
+        const bedType = block.querySelector('select').value;
+        const checklist = [];
+        let yesCount = 0;
+
+        block.querySelectorAll('.checklist-group').forEach((group, i) => {
+          const radios = group.querySelectorAll(`input[name="q${index}_${i}"]`);
+          radios.forEach(radio => {
+            if (radio.checked) {
+              const answer = radio.value;
+              checklist.push({
+                question: group.querySelector('label').innerText.replace(':', ''),
+                answer
+              });
+              if (answer === 'Yes') yesCount++;
+            }
+          });
+        });
+
+        const compliance = ((yesCount / 9) * 100).toFixed(1);
+        const nonCompliant = checklist.filter(item => item.answer === 'No').map(item => item.question).join(", ");
+
+        audits.push({
+          date,
+          auditor,
+          ward,
+          bed,
+          bedType,
+          compliance,
+          nonCompliantItems: nonCompliant || "None"
+        });
+      });
+
+      fetch("https://your-power-automate-endpoint-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audits })
+      })
+      .then(res => {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        if (res.ok) {
+          alert("Audit submitted successfully!");
+        } else {
+          alert("Submission failed. Please try again.");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('loadingOverlay').style.display = 'none';
+        alert("Network error during submission.");
+      });
+    }
+  </script>
+
+</body>
+</html>
